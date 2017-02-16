@@ -1,0 +1,121 @@
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                                  %
+% Author: Francesco Kriegel (francesco.kriegel@tu-dresden.de)                                      %
+%                                                                                                  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\NeedsTeXFormat{LaTeX2e}%
+\ProvidesPackage{tikz-conceptlattice}[2017/02/08 v1.0 Visualization of Concept Lattices]%
+%
+\RequirePackage{ifthen,tikz,varwidth,xparse}%
+\usetikzlibrary{backgrounds,calc,positioning,shapes}%
+%
+\makeatletter%
+%
+% http://tex.stackexchange.com/questions/55594/tikz-two-colored-circle-split
+\tikzset{circle split part fill/.style args={#1,#2}{%
+alias=tmp@name,% Jake's idea !!
+postaction={%
+insert path={%
+\pgfextra{%
+\pgfpointdiff{\pgfpointanchor{\pgf@node@name}{center}}%
+{\pgfpointanchor{\pgf@node@name}{east}}%
+\pgfmathsetmacro\insiderad{\pgf@x}%
+\fill[#1] (\pgf@node@name.base) ([xshift=-\pgflinewidth]\pgf@node@name.east) arc%
+(0:180:\insiderad-\pgflinewidth)--cycle;%
+\fill[#2] (\pgf@node@name.base) ([xshift=\pgflinewidth]\pgf@node@name.west) arc%
+(180:360:\insiderad-\pgflinewidth)--cycle;%
+}}}}}%
+%
+%
+% http://tex.stackexchange.com/questions/197525/are-there-draw-split-keys-for-other-split-shapes-besides-the-rectangle-split
+\pgfutil@namelet{pgf@sh@fbg@circle split@original}{pgf@sh@fbg@circle split}%
+\newif\ifpgfshapecirclesplitdrawsplits%
+\pgfshapecirclesplitdrawsplitstrue%
+\pgfkeys{%
+/pgf/circle split draw splits/.is if=pgfshapecirclesplitdrawsplits%
+}%
+\def\pgf@sm@shape@name{circle split}%
+\pgf@sh@beforebgpath{%
+\ifpgfshapecirclesplitdrawsplits%
+\csname pgf@sh@fbg@circle split@original\endcsname%
+\fi%
+}%
+%
+\DeclareOption{compat}{%
+\newcommand{\Node}[3]{\conceptnode{#1}(#2,#3)}%
+\newcommand{\gNode}[3]{\conceptnode[supirr]{#1}(#2,#3)}%
+\newcommand{\mNode}[3]{\conceptnode[infirr]{#1}(#2,#3)}%
+\newcommand{\gmNode}[3]{\conceptnode[bothirr]{#1}(#2,#3)}%
+\newcommand{\Edge}[2]{\conceptedge{#1}{#2}}%
+\newcommand{\leftObjbox}[4]{\objectlabel[l][xshift=-#2*\unitlength,yshift=-#3*\unitlength]{#1}{#4}}%
+\newcommand{\centerObjbox}[4]{\objectlabel[c][xshift=#2*\unitlength,yshift=-#3*\unitlength]{#1}{#4}}%
+\newcommand{\rightObjbox}[4]{\objectlabel[r][xshift=#2*\unitlength,yshift=-#3*\unitlength]{#1}{#4}}%
+\newcommand{\leftAttbox}[4]{\attributelabel[l][xshift=-#2*\unitlength,yshift=#3*\unitlength]{#1}{#4}}%
+\newcommand{\centerAttbox}[4]{\attributelabel[c][xshift=#2*\unitlength,yshift=#3*\unitlength]{#1}{#4}}%
+\newcommand{\rightAttbox}[4]{\attributelabel[r][xshift=#2*\unitlength,yshift=#3*\unitlength]{#1}{#4}}%
+\newcommand{\CircleSize}[1]{}%
+\newcommand{\NodeThickness}[1]{}%
+\newcommand{\EdgeThickness}[1]{}%
+\DeclareDocumentEnvironment{diagram}{s m m}{%
+\begingroup%
+\IfBooleanTF{#1}%
+{\csname conceptlattice\endcsname *[x=\unitlength,y=\unitlength]}%
+{\csname conceptlattice\endcsname[x=\unitlength,y=\unitlength]}%
+}{%
+\csname endconceptlattice\endcsname%
+\endgroup%
+}%
+}%
+%
+\tikzstyle{conceptnode}=[circle,draw,minimum size=5mm,inner sep=0pt]%
+\tikzstyle{supirr}=[circle split,draw,minimum size=5mm,inner sep=0pt,%
+circle split draw splits=false,circle split part fill={white,black!15}]%
+\tikzstyle{infirr}=[circle split,draw,minimum size=5mm,inner sep=0pt,%
+circle split draw splits=false,circle split part fill={black!15,white}]%
+\tikzstyle{bothirr}=[circle split,draw,minimum size=5mm,inner sep=0pt,%
+circle split draw splits=false,circle split part fill={black!15,black!15}]%
+%
+\newboolean{conceptlattice@showids}%
+%
+\DeclareDocumentCommand{\conceptnode}{O{conceptnode} m r(, u)}{%
+\node[#1] (#2) at (#3,#4) {\ifthenelse{\boolean{conceptlattice@showids}}{#2}{}};%
+}%
+\DeclareDocumentCommand{\conceptedge}{O{-} m m}{%
+\draw[#1] (#2) edge (#3);%
+}%
+\DeclareDocumentCommand{\objectlabel}{s O{c} O{} O{4cm} m m}{%
+\node[\ifx#2lbelow left\else\ifx#2rbelow right\else below\fi\fi=of #5,%
+anchor=\ifx#2lnorth east\else\ifx#2rnorth west\else north\fi\fi,%
+draw=black,fill=white,%
+execute at begin node={\begin{varwidth}{#4}\begin{center}},%
+execute at end node={\end{center}\end{varwidth}},#3] (#5-object)%
+{#6};%
+\IfBooleanT{#1}{\draw[-,dotted] (#5) edge (#5-object);}%
+}%
+\DeclareDocumentCommand{\attributelabel}{s O{c} O{} O{4cm} m m}{%
+\node[\ifx#2labove left\else\ifx#2rabove right\else above\fi\fi=of #5,%
+anchor=\ifx#2lsouth east\else\ifx#2rsouth west\else south\fi\fi,%
+draw=black,fill=white,%
+execute at begin node={\begin{varwidth}{#4}\begin{center}},%
+execute at end node={\end{center}\end{varwidth}},#3] (#5-attribute)%
+{#6};%
+\IfBooleanT{#1}{\draw[-,dotted] (#5) edge (#5-attribute);}%
+}%
+\DeclareDocumentEnvironment{conceptlattice}{s O{}}{%
+\begingroup%
+\IfBooleanTF{#1}{\setboolean{conceptlattice@showids}{true}}{\setboolean{conceptlattice@showids}{false}}%
+\csname tikzpicture\endcsname[x=20mm,y=20mm,node distance=1mm,%
+baseline=(conceptlattice@baselinenode.base),#2]%
+\setbaselineY{0}%
+}{%
+\csname endtikzpicture\endcsname%
+\endgroup%
+}%
+\newcommand{\setbaselineY}[1]{\node (conceptlattice@baselinenode) at (0,#1) {};}%
+%
+\makeatother%
+%
+\ProcessOptions\relax
+%

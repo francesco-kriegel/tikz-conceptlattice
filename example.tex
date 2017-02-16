@@ -1,0 +1,56 @@
+%%This is a very basic article template.
+%%There is just one section and two subsections.
+\documentclass{article}
+
+\usepackage[compat]{tikz-conceptlattice}
+
+\begin{document}
+
+
+\section{Title}
+
+\subsection{Subtitle}
+
+Plain text.
+
+\subsection{Another subtitle}
+
+More plain text.
+
+\framebox{
+  \begin{conceptlattice}*
+    \conceptnode[rectangle,draw]{a} (0,0)
+    \conceptnode{b} (1,1)
+    \conceptedge[dashed]{a}{b}
+    \attributelabel*[c][xshift=2cm]{a}{mooop}
+    \attributelabel*[l][xshift=2cm]{b}{noopy}
+    \objectlabel*[r]{b}{gooof}
+  \end{conceptlattice}
+}
+
+\framebox{
+{\unitlength 1.2mm
+\begin{diagram}{40}{55}
+\Node{1}{20}{10}
+\Node{2}{35}{20}
+\Node{3}{5}{30}
+\Node{4}{35}{40}
+\Node{5}{20}{50}
+\Edge{1}{2}
+\Edge{1}{3}
+\Edge{2}{4}
+\Edge{3}{5}
+\Edge{4}{5}
+\leftAttbox{3}{2}{2}{1.}
+\rightAttbox{2}{2}{2}{disqualified}
+\rightAttbox{4}{2}{2}{2.}
+\leftObjbox{3}{2}{2}{Alonso}
+\rightObjbox{2}{2}{2}{Montoya}
+\rightObjbox{4}{2}{2}{Schumacher}
+\end{diagram}}
+}
+
+Further text.
+
+
+\end{document}
